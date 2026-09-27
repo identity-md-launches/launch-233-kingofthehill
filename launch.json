@@ -1,0 +1,22 @@
+{
+  "kind": "evm_project",
+  "token": {
+    "contract": "LaunchToken",
+    "name": "Crown",
+    "symbol": "CRWN",
+    "decimals": 18
+  },
+  "contracts": [
+    {
+      "contract": "KingOfTheHill",
+      "constructorArgs": ["$token"]
+    }
+  ],
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "notes": "Crown (CRWN) and KingOfTheHill on Sepolia (chain id 11155111). Token: LaunchToken in src/LaunchToken.sol, an OpenZeppelin ERC-20 named Crown, symbol CRWN, 18 decimals, no constructor arguments; its constructor mints the whole fixed supply of 1,000,000,000 CRWN (10^27 minor units) to msg.sender, which is the ProjectFactory at launch. No mint, burn, owner, pause, blocklist, fee or upgrade path. Application contract: KingOfTheHill in src/KingOfTheHill.sol, constructor(address token_) bound to CRWN through constructorArgs [\"$token\"]; it reverts on the zero address, stores the token as an immutable and exposes it via token(). It holds no CRWN and no ETH at deployment (no payable function, no receive, no fallback), reads no msg.sender in its constructor, has no owner or admin parameter, so $owner is unused, and needs no initialization call. Game rules are fixed in code: first claim of a round needs at least 1,000 CRWN and goes wholly to the pot; later claims need at least ceil(kingPayment * 110 / 100), are refused from the current king and must land before lastClaimAt + 24 hours; the dethroned king is credited kingPayment plus floor(amount * 5 / 100) and the rest goes to the pot. settle() by anyone at or after lastClaimAt + 24 hours credits the king the pot and starts the next round; withdraw() pays the caller's credit (pull-based, nonReentrant). Invariant: CRWN held equals the sum of withdrawable balances plus the pot. Pool: no hook, CRWN paired against native ETH (zero address), fee 3000, tick spacing 60; initialPrice is sqrtPriceX96 for a 1:1 reference and the deployer derives the effective opening price from the pinned policy (initialMarketCapWei). Players obtain CRWN by swapping Sepolia ETH in this pool; the factory seeds it with the launch token only. Supply, allocations, owners, contributor lock and gas limits come from policy, not from this manifest. Build: solc 0.8.26, evm paris, optimizer 200 runs, bytecode_hash none; verify offline with forge build --offline, forge test --offline, forge fmt --check. ABI exports at docs/abi/LaunchToken.json and docs/abi/KingOfTheHill.json."
+}
